@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="2.0">
+	<wb-module deploy-name="com.inexas.fsm">
+		<wb-resource deploy-path="/" source-path="src"/>
+		<dependent-module deploy-path="../" handle="module:/classpath/lib//Users/keith/.m2/repository/junit/junit/4.10/junit-4.10.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+		<dependent-module deploy-path="../" handle="module:/classpath/lib//Users/keith/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar">
+			<dependency-type>uses</dependency-type>
+		</dependent-module>
+	</wb-module>
+</project-modules>

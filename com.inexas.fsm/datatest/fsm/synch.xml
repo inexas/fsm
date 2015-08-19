@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- This file is used for build testing -->
+
+<fsm name="synch">
+
+	<initial-state>
+		<transition target="s0" name="Start" event="Start"/>
+	</initial-state>
+	
+	<state name="s0">
+		<transition target="s1" name="to-s1" event="to-s1"/>
+	</state>
+	
+	<!-- when s1 is occupied the synch bar will fire -->
+	<state name="s1">
+		<transition target="start-sb" name="to-start-sb"/>
+	</state>
+	
+	<!-- split into two threads -->
+	<synch-bar name="start-sb">
+		<transition target="s2" name="to-s2"/>
+		<transition target="s3" name="to-s3"/>
+	</synch-bar>
+	
+	<!-- This will be occupied by the synch -->
+	<state name="s2">
+		<transition target="end-sb" name="to-end-sb1"/>
+	</state>
+	
+	<!-- so will this -->
+	<state name="s3">
+		<transition target="s4" name="to-s4" event="to-s4"/>
+	</state>
+	
+	<state name="s4">
+		<transition target="end-sb" name="to-end-sb2"/>
+	</state>
+	
+	<!-- the end synch will wait for s4 to be occupied -->
+	<synch-bar name="end-sb">
+		<transition target="s5" name="to-s5"/>
+	</synch-bar>
+
+	<!-- this will terminate when entered -->
+	<state name="s5"/>
+</fsm>

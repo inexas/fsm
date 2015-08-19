@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!--
+	This is a representation of the turnstyle FSM in the 
+	Martin-FSM_Tutorial.pdf in /docs in this project
+-->
+<fsm name="toaster" implementation="com.inexas.fsm.Toaster">
+	<!-- Missing from this diagram:
+		 - dotted line twixt CheckTempterature and ReadColorSensor
+		 - bug in diagram: Done event must swith heater off
+		 - Martin uses activity shapes to join threads before the synch but
+		   should use states
+		-->
+	<initial-state>
+		<transition target="Idle" name="to-Idle" event="to-Idle"/>
+	</initial-state>
+	
+	<state name="Idle">
+		<transition target="WaitForStart" name="Start" event="Start"/>
+	</state>
+	
+	<state name="WaitForStart">
+		<!-- see the PDF for notes about this, it's here to force the start
+			 synch to wait for the start event -->
+		<transition target="ToastSynch" name="to-ToastSynch"/>
+	</state>
+	
+	<synch-bar name="ToastSynch">
+		<transition target="WaitingToCheckColor" name="to-WaitingToCheckColor"/>
+		<transition target="HeaterControl" name="to-HeaterControl"/>
+		<transition target="TimerRunning" name="to-TimerRunning">
+			<transition-action name="resetTimer"/>
+		</transition>
+	</synch-bar>
+	
+	<state name="WaitingToCheckColor">
+		<transition target="ReadColorSensor" name="Check" event="Check"/>
+		<transition target="CheckColorDone" name="Done" event="Done"/>
+	</state>
+	<state name="CheckColorDone">
+		<!-- added to diagram: wait for synch -->
+		<transition target="EndToastSynch" name="to-EndToastSynch"/>
+	</state>
+	
+	<activity-state name="ReadColorSensor">
+		<entry-action name="readColorSensor"/>
+		<transition target="ReadColorSynchWait" name="to-ReadColorSynchWait"/>
+	</activity-state>
+	
+	<state name="ReadColorSynchWait">
+		<!-- added to diagram: wait for synch -->
+		<transition target="ReadColorSynch" name="to-ReadColorSynch"/>
+	</state>
+	
+	<synch-bar name="ReadColorSynch">
+		<transition target="s1" name="to-s1"/>
+		<transition target="s2" name="to-s2"/>
+	</synch-bar>
+
+	<!-- added to diagram... -->
+	<state name="s1">
+		<transition target="CheckAbsoluteColor" name="to-CheckAbsoluteColor" event="s1"/>
+	</state>
+	<state name="s2">
+		<transition target="CheckColorChangeRate" name="to-CheckColorChangeRate" event="s2"/>
+	</state>
+	
+		
+	<activity-state name="CheckAbsoluteColor">
+		<entry-action name="checkAbsoluteColor"/>
+		<transition target="SwitchAbsoluteColor" name="to-SwitchAbsoluteColor" event="to-SwitchAbsoluteColor"/>
+	</activity-state>
+	<decision name="SwitchAbsoluteColor" query="getAbsoluteColor">
+		<case name="TooDark">
+			<transition target="EndReadColorSynchWait" name="FireDone">
+				<transition-action name="fireDone"/>
+			</transition>
+		</case>
+		<default>
+			<!-- this includes "just right" and "too dark" -->
+			<transition target="EndReadColorSynchWait" guard="notTooLight" name="to-EndReadColorSynch"/>
+		</default>
+	</decision>
+
+	<activity-state name="CheckColorChangeRate">
+		<entry-action name="checkColorChangeRate"/>
+		<transition target="SwitchColorChangeRate" name="to-SwitchColorChangeRate" event="to-SwitchColorChangeRate"/>
+	</activity-state>
+	<decision name="SwitchColorChangeRate" query="getSwitchColorChangeRate">
+		<case name="Bad">
+			<transition target="EndReadColorSynchWait" name="FireDone">
+				<transition-action name="fireDone"/>
+			</transition>
+		</case>
+		<default>
+			<transition target="EndReadColorSynchWait"/>
+		</default>
+	</decision>
+	
+	<state name="EndReadColorSynchWait">
+		<transition target="EndReadColorSynch" name="to-EndReadColorSynch"/>
+	</state>
+			
+	<synch-bar name="EndReadColorSynch">
+		<transition target="WaitingToCheckColor" name="WaitingToCheckColor"/>
+	</synch-bar>
+
+	<composite-state name="HeaterControl">
+		<!-- unnamed in the PDF -->
+		<initial-state>
+			<transition target="HeaterOff" name="to-HeaterOff" event="to-HeaterOff"/>
+		</initial-state>
+		<state name="HeaterOff">
+			<entry-action name="heaterOff"/>
+			<transition target="CheckTemperature" name="Check" event="Check"/>
+		</state>
+		<activity-state name="CheckTemperature">
+			<!--we require at least one action-->
+			<entry-action name="checkTemperature"/>
+			<transition target="Temperature" name="to-Temperature" event="to-Temperature"/>
+		</activity-state>
+		<decision name="Temperature" query="getTemperature">
+			<case name="TooHot">
+				<transition target="HeaterOff" name="to-HeaterOff"/>
+			</case>
+			<default>
+				<transition target="HeaterOn" name="to-HeaterOn"/>
+			</default>
+		</decision>
+		<state name="HeaterOn">
+			<entry-action name="heaterOn"/>
+			<transition target="CheckTemperature" name="Check" event="Check"/>
+		</state>
+		<transition target="HeaterControlDone" name="Done" event="Done">
+			<!-- change from PDF - force heater off when done -->
+			<transition-action name="heaterOff"/>
+		</transition>
+	</composite-state>
+	<state name="HeaterControlDone">
+		<!-- added to diagram: wait for synch -->
+		<transition target="EndToastSynch" name="to-EndToastSynch"/>
+	</state>
+	
+	<state name="TimerRunning">
+		<transition target="TimerOff" name="Expired" event="Expired">
+			<transition-action name="fireDone"/>
+		</transition>
+		<transition target="TimerOff" name="Done" event="Done">
+			<transition-action name="stopTimer"/>
+		</transition>
+	</state>
+	<state name="TimerOff">
+		<!-- anonymous state below TimerRunning in PDF -->
+		<transition target="EndToastSynch" name="to-EndToastSynch"/>
+	</state>
+	
+	<synch-bar name="EndToastSynch">
+		<!-- bottom of diagram in PDF -->
+		<transition target="Idle" name="Eject">
+			<transition-action name="eject"/>
+		</transition>
+	</synch-bar>
+</fsm>

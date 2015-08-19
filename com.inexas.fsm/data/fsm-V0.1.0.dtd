@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Notes
+	terminal-actions:
+		If terminal-actions is set to TRUE then INITIAL and FINAL
+		are allowed to have exit and entry actions respectively.
+-->
+<!ELEMENT fsm (
+		initial-state,
+		entry-action*,
+		(activity-state|composite-state|decision|signal|state|synch-bar)*,
+		exit-action*,
+		final-state?) >
+	<!ATTLIST fsm
+		name CDATA #REQUIRED
+		logger-name CDATA #IMPLIED
+		logger-level (TRACE|DEBUG|INFO|WARN|ERROR|FATAL|OFF) "OFF"
+		implementation CDATA #IMPLIED
+		terminal-actions (TRUE|FALSE) "FALSE"
+	>
+
+<!-- vertices -->
+
+<!ELEMENT composite-state (
+		initial-state?,
+		entry-action*,
+		(activity-state|composite-state|decision|signal|state|synch-bar)*,
+		(transition|reaction)*,
+		exit-action*) >
+	<!ATTLIST composite-state
+		name CDATA #REQUIRED
+		history (none|shallow|deep) "none">
+
+<!-- The initial state has exactly one transition for
+	which event will default to "Start" composite states
+	have zero or one initial-states, FSMs have exactly one-->
+<!ELEMENT initial-state (transition,exit-action*)>
+
+<!-- The FSM can have zero or one final states. Only
+	incoming transitions are allowed. The inclusion of
+	entry actions is a probable departure from the 
+	specification so this can be disabled in the FSM.
+	Entry actions are really useful to clean up. -->
+<!ELEMENT final-state (entry-action*)>
+
+<!ELEMENT state (entry-action*,(transition|reaction)*,exit-action*)>
+	<!ATTLIST state
+		name CDATA #REQUIRED>
+
+<!ELEMENT activity-state (entry-action*,transition,exit-action*)>
+	<!ATTLIST activity-state
+		name CDATA #REQUIRED>
+
+<!ELEMENT decision (case*,default?)>
+	<!ATTLIST decision
+		name CDATA #REQUIRED
+		query CDATA #REQUIRED>
+
+<!ELEMENT case (transition)>
+	<!ATTLIST case
+		name CDATA #REQUIRED>
+
+<!ELEMENT default (transition)>
+
+<!ELEMENT synch-bar (entry-action*,transition*,exit-action*)>
+	<!ATTLIST synch-bar
+		name CDATA #REQUIRED>
+
+<!ELEMENT signal (entry-action*,transition?,exit-action*)>
+	<!ATTLIST signal
+		name CDATA #REQUIRED>
+
+<!ELEMENT entry-action (argument*)>
+	<!ATTLIST entry-action
+		name CDATA #REQUIRED>
+
+<!ELEMENT exit-action (argument*)>
+	<!ATTLIST exit-action
+		name CDATA #REQUIRED>
+
+<!-- transition and reaction support -->
+
+<!--A transition may have zero or one events. Zero event transitions
+	are OK for the starting transition, transitions from synchs, transitions
+	from decisions.
+	
+	The name of the transition is optional, if not provided the 
+	transition is automatically named "sourceStateName-eventName-targetStateName".
+	The name must be unique for the whole model.
+	
+	If the transition contains more than one event name, several transitions are
+	automatically created using the automatic name in which case the name 
+	*must* be automatic.
+	
+	If there is no event the automatic name is "sourceStateName-targetStateName"
+-->
+<!ELEMENT transition (transition-action*)>
+	<!ATTLIST transition
+		name CDATA #IMPLIED
+		target CDATA #REQUIRED
+		event CDATA #IMPLIED
+		guard CDATA #IMPLIED>
+
+<!ELEMENT transition-action (argument*)>
+	<!ATTLIST transition-action
+		name CDATA #REQUIRED>
+
+<!-- Think about whether event should be required for reactions given
+	that the default name is XXX-event-XXX-->
+<!ELEMENT reaction (reaction-action*)>
+	<!ATTLIST reaction
+		name CDATA #IMPLIED
+		event CDATA #IMPLIED
+		guard CDATA #IMPLIED>
+
+<!ELEMENT reaction-action (argument*)>
+	<!ATTLIST reaction-action
+		name CDATA #REQUIRED>
+
+<!--Arguments are provided in several data types according to the
+	type attribute:
+	
+		Type		Value string will be interpreted as...
+		####		#############################################
+		parameter	parameter passed on handle event call, any type (should have class)
+		call		a getter from implementation, e.g. "getTime" or "isBig"
+		integer    	an integer value, e.g. "12321"
+		string    	text, e.g. "This is some text"
+		boolean 	boolean, must be either "true" or "false")
+	
+	For call arguments, the type for the argument is derived from
+	the getter (getTime(), isActive()).
+	
+	You can provide other data types through the call type -->
+<!ELEMENT argument EMPTY>
+	<!ATTLIST argument
+		type (parameter|call|integer|string|bool) "string"
+		class CDATA #IMPLIED
+		value CDATA #REQUIRED>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- min: the absolute minimum of everything -->
+<fsm name="min">
+	<initial-state>
+		<transition target="s1" name="to-s1" event="*_Start"/>
+	</initial-state>
+	<state name="s1"/>
+</fsm>

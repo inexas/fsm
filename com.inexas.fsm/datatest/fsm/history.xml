@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- This is used for build testing history -->
+
+<fsm name="history">
+	<initial-state>
+		<transition target="shallow" name="to-shallow" event="to-shallow"/>
+	</initial-state>
+	
+	<state name="s1">
+		<transition target="shallow" name="to-shallow" event="to-shallow"/>
+		<transition target="shallow/H" name="to-shallow-H" event="to-shallow/H"/>
+		<transition target="s2" name="to-s2" event="to-s2"/>
+	</state>
+	
+	<composite-state name="shallow" history="shallow">
+		<initial-state>
+			<transition target="shallow.s0" name="to-shallow.s0" event="to-shallow.s0"/>
+		</initial-state>
+		
+		<state name="shallow.s0">
+			<transition target="shallow.s1" name="to-shallow.s1" event="to-shallow.s1"/>
+		</state>
+		
+		<state name="shallow.s1">
+			<transition target="shallow.s0" name="to-shallow.s0" event="to-shallow.s0"/>
+			<transition target="shallow.cs" name="to-shallow.cs" event="to-shallow.cs"/>
+		</state>
+		
+		<composite-state name="shallow.cs">
+			<!-- this should not maintain history -->
+			<initial-state>
+				<transition target="shallow.cs.s0" name="to-shallow.cs.s0" event="to-shallow.cs.s0"/>
+			</initial-state>
+			
+			<state name="shallow.cs.s0">
+				<transition target="shallow.cs.s1" name="to-shallow.cs.s1" event="to-shallow.cs.s1"/>
+			</state>
+			
+			<state name="shallow.cs.s1">
+				<transition target="shallow.cs.s0" name="to-shallow.cs.s0" event="to-shallow.cs.s0"/>
+			</state>
+			
+			<transition target="/shallow/shallow.s1" name="to-shallow.s1" event="to-shallow.s1"/>
+		</composite-state>
+		
+		<transition target="s1" name="to-s1" event="to-s1"/>
+		<transition target="deep" name="to-deep" event="to-deep"/>
+	</composite-state>
+	
+	<composite-state name="deep" history="deep">
+		<initial-state>
+			<transition target="deep.s0" name="to-deep.s0" event="to-deep.s0"/>
+		</initial-state>
+		
+		<state name="deep.s0">
+			<transition target="deep.cs" name="to-deep.cs" event="to-deep.cs"/>
+		</state>
+		
+		<composite-state name="deep.cs">
+			<!-- this should maintain history -->
+			<initial-state>
+				<transition target="deep.cs.s1" name="to-deep.cs.s1" event="to-deep.cs.s1"/>
+			</initial-state>
+			<state name="deep.cs.s1">
+				<transition target="deep.cs.cs/deep.cs.cs.s0" name="to-deep.cs.cs.s0" event="to-deep.cs.cs.s0"/>
+			</state>
+			
+			<composite-state name="deep.cs.cs">
+				<!-- this should maintain history -->
+				<state name="deep.cs.cs.s0">
+					<transition target="deep.cs.cs.s1" name="to-deep.cs.cs.s1" event="to-deep.cs.cs.s1"/>
+				</state>
+				
+				<state name="deep.cs.cs.s1">
+					<transition target="deep.cs.cs.s0" name="to-deep.cs.cs.s0" event="to-deep.cs.cs.s0"/>
+				</state>
+				
+				<transition target="deep.cs.s1" name="to-deep.cs.s1" event="to-deep.cs.s1"/>
+			</composite-state>
+			
+			
+			<transition target="deep.cs" name="to-deep.cs" event="to-deep.cs"/>
+		</composite-state>
+		
+		<transition target="s2" name="to-s2" event="to-s2"/>
+	</composite-state>
+	
+	<state name="s2">
+		<transition target="deep" name="to-deep" event="to-deep"/>
+		<transition target="deep/H*" name="to-deep-H*" event="to-deep/H*"/>
+	</state>
+</fsm>

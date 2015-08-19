@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- Test the actions -->
+<fsm name="actions" implementation="com.inexas.fsm.Actions">
+	<initial-state>
+		<transition target="S1" event="Start">
+			<transition-action name="toS1"/>
+		</transition>
+	</initial-state>
+	
+	<state name="S1">
+		<entry-action name="entryAction1"/>
+		<entry-action name="entryAction2"/>
+		<transition target="_SELF" event="ToSelf">
+			<transition-action name="toSelf1"/>
+			<transition-action name="toSelf2">
+				<argument value="a1"/>
+				<argument type="parameter" value="p" class="java.lang.String"/>
+				<argument type="call" value="getA2"/>
+				<argument type="integer" value="3"/>
+				<argument type="string" value="a4"/>
+				<argument type="bool" value="false"/>
+			</transition-action>
+		</transition>
+		<transition target="FINAL" event="toFinal" guard="toFinalGuard"/>
+		<exit-action name="exitAction"/>
+	</state>
+	
+	<final-state/>
+</fsm>

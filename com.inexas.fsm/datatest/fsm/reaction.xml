@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- reaction: test the reactions -->
+<fsm name="reaction" implementation="com.inexas.fsm.TestImplementation">
+	<initial-state>
+		<transition target="s0" event="*_Start"/>
+	</initial-state>
+	<state name="s0">
+		<entry-action name="entryAction"/>
+		<transition target="_SELF" event="transition">
+			<transition-action name="transition"/>
+		</transition>
+		<reaction event="reaction">
+			<reaction-action name="reaction"/>
+		</reaction>
+		<exit-action name="exitAction"/>
+	</state>
+</fsm>

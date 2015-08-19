@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- Smorgasbord: one of everything, this file is used for build
+	 testing -->
+
+<!--
+<!ELEMENT fsm (
+		initial-state,
+		entry-action*,
+		(activity-state|composite-state|decision|signal|state|synch-bar)*,
+		exit-action*,
+		final-state?) >
+	<!ATTLIST fsm
+		name CDATA #REQUIRED
+		implementation CDATA #IMPLIED> -->
+<fsm name="smorgasbord" implementation="com.inexas.fsm.Smorgasbord">
+
+	<initial-state>
+		<transition target="a" name="to-a" event="Start"/>
+	</initial-state>
+	
+	<!--
+	<!ELEMENT entry-action EMPTY>
+		<!ATTLIST entry-action
+			name CDATA #REQUIRED>
+	-->
+	<entry-action name="enter"/>
+	<entry-action name="enter"/>
+	
+	<!--
+	<!ELEMENT activity (entry-action*,transition*,exit-action*)>
+		<!ATTLIST activity
+			name CDATA #REQUIRED>
+	-->	
+	<activity-state name="a">
+		<entry-action name="enter">
+			<argument value="a1"/>
+			<argument type="call" value="getA2"/>
+			<argument type="integer" value="3"/>
+			<argument type="string" value="a4"/>
+			<argument type="bool" value="false"/>
+		</entry-action>
+		<entry-action name="enter"/>
+		<transition name="to-cs-a1" target="cs-a" event="cs-a"/>
+	</activity-state>
+	<composite-state name="cs-a">
+		<initial-state>
+			<transition target="s" name="to-s" event="to-s"/>
+		</initial-state>
+		<state name="s">
+			<transition target="a" name="to-a" event="to-a"/>
+		</state>
+		<activity-state name="a">
+			<transition name="to-cs-a-s" target="s" event="to-cs-a-s"/>
+			<exit-action name="exit"/>
+			<exit-action name="exit"/>
+		</activity-state>
+		<transition target="cs" name="to-cs1" event="to-cs"/>
+	</composite-state>
+	
+	<!--
+	<!ELEMENT composite-state (
+			initial-state,
+			entry-action*,
+			(activity|composite-state|decision|signal|state|synch-bar)*,
+			transition*,
+			exit-action*) >
+		<!ATTLIST composite-state
+			name CDATA #REQUIRED
+			history (none|shallow|deep) "none">
+	-->
+	<composite-state name="cs" history="shallow">
+		<initial-state>
+			<transition target="a" name="to-a" event="to-a"/>
+		</initial-state>
+		<entry-action name="enter"/>
+		<entry-action name="enter"/>
+		<activity-state name="a">
+			<entry-action name="enter"/>
+			<transition target="cs" name="to-cs2" event="to-cs2"/>
+		</activity-state>
+		<composite-state name="cs">
+			<initial-state>
+				<transition target="s1" name="to-s1" event="to-s1"/>
+			</initial-state>
+			<state name="s1"/>
+			<transition target="d0" name="to-d0" event="to-d0"/>
+		</composite-state>
+		<decision name="d0" query="query">
+			<case name="d0">
+				<transition target="signal" name="to-signal"/>
+			</case>
+		</decision>
+		<signal name="signal">
+			<transition target="s1" name="to-s1" event="to-s1"/>
+		</signal>
+		<state name="s1">
+			<transition target="sb" name="to-sb"/>
+		</state>
+		<synch-bar name="sb">
+			<transition target="endstate" name="to-endstate"/>
+		</synch-bar>
+		<state name="endstate"/>
+		<transition target="cs-cs" name="to-cs-cs" event="to-cs-cs"/>
+		<transition target="signal" name="to-signal" event="to-signal"/>
+		<exit-action name="exit"/>
+		<exit-action name="exit"/>
+	</composite-state>
+	<composite-state name="cs-cs">
+		<initial-state>
+			<transition target="cs1" name="to-cs1" event="to-cs1"/>
+		</initial-state>
+		<composite-state name="cs1">
+			<initial-state>
+				<transition target="s1" name="to-s1" event="to-s1"/>
+			</initial-state>
+			<state name="s1"/>
+			<transition target="cs2" name="to-cs3" event="to-cs2"/>
+		</composite-state>
+		<composite-state name="cs2">
+			<initial-state>
+				<transition target="s1" name="to-s1" event="to-s1"/>
+			</initial-state>
+			<state name="s1"/>
+		</composite-state>
+		<transition target="d1" name="to-d1" event="to-d1"/>
+		<transition target="/cs/H" name="to-cs-H" event="to-cs/H"/>
+	</composite-state>
+
+	<decision name="d1" query="query">
+		<case name="c1">
+			<transition name="to-a-c1" target="a"/>
+		</case>
+		<case name="c2">
+			<transition name="to-a-c2" target="a"/>
+		</case>
+		<default>
+			<transition name="to-a-default" target="cs-d"/>
+			<!-- transition name="to-a-default" target="cs-d" event="to-a-default"/-->
+		</default>
+	</decision>
+	<composite-state name="cs-d">
+		<initial-state>
+			<transition target="d2" name="to-d2" event="to-d2"/>
+		</initial-state>
+		<decision name="d2" query="query">
+			<case name="c1">
+				<!-- transition name="to-s1" target="s1" event="to-s1"/ -->
+				<transition name="to-s1" target="s1"/>
+			</case>
+		</decision>
+		<state name="s1"/>
+		<transition target="signal" name="to-signal" event="to-signal"/>
+	</composite-state>
+
+	<!--
+	<!ELEMENT signal (entry-action*,transition?,exit-action*)>
+		<!ATTLIST signal
+			name CDATA #REQUIRED
+			is-start (true|false) "false"
+			is-end (true|false) "false">
+	-->
+	<signal name="signal">
+		<entry-action name="enter"/>
+		<entry-action name="enter"/>
+		<transition target="cs-signal" name="to-cs-signal" event="to-cs-signal"/>
+		<exit-action name="exit"/>
+		<exit-action name="exit"/>
+	</signal>
+	<composite-state name="cs-signal">
+		<initial-state>
+			<transition target="signal" name="to-signal" event="to-signal"/>
+		</initial-state>
+		<signal name="signal"/>
+		<transition target="s1" name="to-s1" event="to-s1"/>
+	</composite-state>
+		
+	<!--
+	<!ELEMENT state (entry-action*,transition*,exit-action*)>
+		<!ATTLIST state
+			name CDATA #REQUIRED
+			is-start (true|false) "false"
+			is-end (true|false) "false">
+	-->
+	<state name="s1">
+		<entry-action name="enter"/>
+		<entry-action name="enter"/>
+		<!--
+		<!ELEMENT transition (event*,transition-action*)>
+			<!ATTLIST transition
+				name CDATA #REQUIRED
+				target CDATA #REQUIRED
+				guard CDATA #IMPLIED>
+		-->
+		<transition name="toCs" target="cs" guard="guard" event="s1,t->s2,e1">
+			<!--
+			<!ELEMENT transition-action EMPTY>
+				<!ATTLIST transition-action
+					name CDATA #REQUIRED>
+			-->
+			<transition-action name="transitOne" />
+			<transition-action name="transitTwo" />
+		</transition>
+		<transition name="to-cs-state" target="cs-state" event="to-cs-state"/>
+		<exit-action name="exit"/>
+		<exit-action name="exit"/>
+	</state>
+	<composite-state name="cs-state">
+		<initial-state>
+			<transition target="s1" name="to-s1" event="to-s1"/>
+		</initial-state>
+		<state name="s1"/>
+		<transition target="sb-1" name="to-sb-1" event="to-sb-1"/>
+	</composite-state>
+
+	<!--
+	<!ELEMENT synch-bar (entry-action*,transition*,exit-action*)>
+		<!ATTLIST synch-bar
+			name CDATA #REQUIRED
+			is-start (true|false) "false"
+			is-end (true|false) "false">
+	-->
+	<composite-state name="sb-1">
+		<initial-state>
+			<transition target="s0" name="to-s0" event="to-s0"/>
+		</initial-state>
+		<state name="s0">
+			<transition target="start-sb" name="to-start-sb"/>
+		</state>
+		<synch-bar name="start-sb">
+			<entry-action name="enter"/>
+			<entry-action name="enter"/>
+			<transition target="s1" name="to-s1"/>
+			<transition target="s2" name="to-s2"/>
+			<exit-action name="exit"/>
+			<exit-action name="exit"/>
+		</synch-bar>
+		<state name="s1">
+			<transition target="end-sb" name="to-end-sb1"/>
+		</state>
+		<state name="s2">
+			<transition target="end-sb" name="to-end-sb2"/>
+		</state>
+		<synch-bar name="end-sb">
+			<transition target="done"/>
+		</synch-bar>
+		<state name="done"/>
+		<transition target="cs" name="to-cs4" event="to-cs4"/>
+	</composite-state>
+	
+	<!--
+	<!ELEMENT exit-action EMPTY>
+		<!ATTLIST transition-action
+			name CDATA #REQUIRED>
+	-->
+	<exit-action name="exit"/>
+	<exit-action name="exit"/>
+	
+	<final-state/>
+</fsm>

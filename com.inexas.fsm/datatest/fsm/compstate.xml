@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!-- This is used for build testing composite states -->
+
+<fsm name="compstate">
+	<initial-state>
+		<transition target="s0" name="to-s0" event="*_Start"/>
+	</initial-state>
+
+	<state name="s0">
+		<transition target="cs" name="to-cs" event="to-cs"/>
+		<transition target="cs/cs.s2" name="to-cs.s2" event="to-cs.s2"/>
+		<transition target="cs/cs.cs/cs.cs.s2" name="to-cs.cs.s2" event="to-cs.cs.s2"/>
+	</state>
+	
+	<composite-state name="cs">
+		<initial-state>
+			<transition target="cs.s1" name="to-cs.s1" event="to-cs.s1"/>
+		</initial-state>
+		
+		<state name="cs.s1">
+			<transition target="cs.s2" name="to-cs.s2" event="to-cs.s2"/>
+		</state>
+		
+		<state name="cs.s2">
+			<transition target="cs.cs" name="to-cs.cs" event="to-cs.cs"/>
+			<transition target="/s0" name="to-s0" event="to-s0"/>
+		</state>
+		
+		<composite-state name="cs.cs">
+			<initial-state>
+				<transition target="cs.cs.s1" name="to-cs.cs.s1" event="to-cs.cs.s1"/>
+			</initial-state>
+			
+			<state name="cs.cs.s1">
+				<transition target="cs.cs.s2" name="to-cs.cs.s2" event="to-cs.cs.s2"/>
+			</state>
+			
+			<state name="cs.cs.s2"/>
+			
+			<transition target="cs.s1" name="to-cs.s1" event="to-cs.s1"/>
+		</composite-state>
+		
+		<transition target="s0" name="to-s0" event="to-s0"/>
+	</composite-state>
+	
+</fsm>

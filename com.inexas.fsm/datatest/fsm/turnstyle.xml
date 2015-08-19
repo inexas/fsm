@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE fsm SYSTEM "../../data/fsm-V0.1.0.dtd">
+
+<!--
+	This is an implementation of the turnstyle FSM in the 
+	Martin-FSM_Tutorial.pdf in /docs in this project
+-->
+<fsm name="turnstyle" implementation="com.inexas.fsm.Turnstyle">
+	<!-- the initialize is missing from the diagram -->
+	<initial-state>
+		<transition target="NormalMode" name="to-NormalMode" event="to-NormalMode"/>
+	</initial-state>
+	<composite-state name="NormalMode" history="shallow">
+		<initial-state>
+			<transition target="Locked" name="to-Locked" event="to-Locked"/>
+		</initial-state>
+		<state name="Locked">
+			<transition target="Unlocked" name="coin" event="coin">
+				<transition-action name="unlock"/>
+			</transition>
+			<transition target="Violation" name="Pass" event="Pass">
+				<transition-action name="alarm"/>
+			</transition>
+		</state>
+		<state name="Unlocked">
+			<transition target="Unlocked" name="Coin" event="Coin">
+				<transition-action name="thankyou"/>
+			</transition>
+			<transition target="Locked" name="Pass" event="Pass">
+				<transition-action name="lock"/>
+				<transition-action name="thankyouOff"/>
+			</transition>
+		</state>
+		<state name="Violation">
+			<transition target="Locked" name="ready" event="ready">
+				<transition-action name="resetAlarm"/>
+				<transition-action name="lock"/>
+			</transition>
+			<transition target="Violation" name="Coin" event="Coin">
+			</transition>
+			<transition target="Violation" name="Pass" event="Pass"/>
+			<transition target="Violation" name="Reset" event="Reset">
+				<transition-action name="resetAlarm"/>
+			</transition>
+		</state>
+		<transition target="DiagnosticMode" name="Diagnose" event="Diagnose">
+			<transition-action name="saveDeviceStates"/>
+			<!--
+				Notes:
+				1. The ThankyouOff action is moved from the initialize 
+				transition in diagnostic mode as we don't support actions
+				on the initial transition
+				2. There should also be a lock action but it is
+				not shown on the 
+			-->
+			<transition-action name="thankyouOff"/>
+		</transition>
+	</composite-state>
+	
+	<composite-state name="DiagnosticMode">
+		<initial-state>
+			<transition target="TestCoin" name="to-TestCoin" event="to-TestCoin"/>
+		</initial-state>
+		<state name="TestCoin">
+			<transition target="TestPass" name="Coin" event="Coin">
+				<transition-action name="thankyou"/>
+			</transition>
+		</state>
+		<state name="TestPass">
+			<transition target="TestCoin" name="Pass" event="Pass">
+				<transition-action name="thankyouOff"/>
+			</transition>
+		</state>
+		<transition target="DiagnosticMode" name="TestResetAlarm" event="TestResetAlarm">
+			<transition-action name="resetAlarm"/>
+		</transition>
+		<transition target="DiagnosticMode" name="TestAlarm" event="TestAlarm">
+			<transition-action name="alarm"/>
+		</transition>
+		<transition target="DiagnosticMode" name="TestUnlock" event="TestUnlock">
+			<transition-action name="unlock"/>
+		</transition>
+		<transition target="DiagnosticMode" name="TestLock" event="TestLock">
+			<transition-action name="lock"/>
+		</transition>
+		<!--diagram shows Reset going to /NormalMode/Locked this
+			is invalid for us-->
+		<transition target="NormalMode" name="Reset" event="Reset">
+			<transition-action name="lock"/>
+			<transition-action name="thankyouOff"/>
+			<transition-action name="resetAlarm"/>
+		</transition>
+		<transition target="/NormalMode/H" name="Return" event="Return">
+			<transition-action name="restoreDeviceStatus"/>
+		</transition>
+	</composite-state>
+</fsm>
